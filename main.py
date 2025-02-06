@@ -35,10 +35,13 @@ def is_perfect(n: int) -> bool:
     return sum(i for i in range(1, n) if n % i == 0) == n
 
 def is_armstrong(n: int) -> bool:
-    """Check if a number is an Armstrong number."""
+    # Check if the number is negative
+    if n < 0:
+        return False  # Armstrong numbers are not defined for negative numbers
+
     digits = [int(digit) for digit in str(n)]
-    power = len(digits)
-    return sum(d ** power for d in digits) == n
+    num_digits = len(digits)
+    return sum(digit ** num_digits for digit in digits) == n
 
 def get_digit_sum(n: int) -> int:
     """Calculate the sum of digits of a number."""
@@ -92,3 +95,4 @@ PORT = int(os.getenv("PORT", 8000))
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=PORT)
+
