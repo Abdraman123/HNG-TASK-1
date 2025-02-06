@@ -4,8 +4,10 @@ from fastapi import FastAPI, HTTPException
 import requests
 
 app = FastAPI()
-
-NUMBERS_API_URL = "http://numbersapi.com/"
+def get_fun_fact(number):
+    url = f"http://numbersapi.com/{number}"
+    response = requests.get(url)
+    return response.text if response.status_code == 200 else "No fun fact available."
 
 def is_prime(n: int) -> bool:
     """Check if a number is prime."""
