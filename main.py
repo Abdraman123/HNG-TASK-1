@@ -47,38 +47,31 @@ def get_fun_fact(n: int) -> str:
 from fastapi import Query
 
 @app.get("/api/classify-number")
-def classify_number(number: int = Query(..., description="Enter a valid integer")):
-    """Classifies a number and returns its properties in JSON format."""
-
-    try:
-        # Ensure input is an integer
-        number = int(number)
-    except ValueError:
-        raise HTTPException(status_code=400, detail={"number": number, "error": True})
-
-    # Determine number properties
+def classify_number(number: int):
     properties = []
-    if is_prime(number):
+    
+    # Check if prime
+    if number > 1 and all(number % i != 0 for i in range(2, int(number**0.5) + 1)):
         properties.append("prime")
-    if is_perfect(number):
-        properties.append("perfect")
-    if is_armstrong(number):
-        properties.append("armstrong")
 
-    # Add odd/even classification
+    # Check if even or odd
     properties.append("even" if number % 2 == 0 else "odd")
 
-    # Create the response JSON
-    result = {
+    # Calculate digit sum
+    digit_sum = sum(int(digit) for digit in str(abs(number)))
+
+    # Get fun fact
+    fun_fact = get_fun_fact(number)
+
+    return {
         "number": number,
-        "is_prime": is_prime(number),
-        "is_perfect": is_perfect(number),
+        "is_prime": "prime" in properties,
+        "is_perfect": number == sum(i for i in range(1, number) if number % i == 0),
         "properties": properties,
-        "digit_sum": get_digit_sum(number),
-        "fun_fact": get_fun_fact(number)
+        "digit_sum": digit_sum,
+        "fun_fact": fun_fact
     }
-    
-    return result
+
 
 
 from fastapi.middleware.cors import CORSMiddleware
