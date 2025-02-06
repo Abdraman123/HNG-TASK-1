@@ -2,12 +2,22 @@ import os
 import uvicorn
 from fastapi import FastAPI, HTTPException
 import requests
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-def get_fun_fact(number):
-    url = f"http://numbersapi.com/{number}"
-    response = requests.get(url)
-    return response.text if response.status_code == 200 else "No fun fact available."
+
+# Define the Numbers API base URL
+NUMBERS_API_URL = "http://numbersapi.com/"
+
+def get_fun_fact(number: int) -> str:
+    """Fetch a fun fact about a number from the Numbers API."""
+    try:
+        response = requests.get(f"{NUMBERS_API_URL}{number}")
+        if response.status_code == 200:
+            return response.text
+        return "No fun fact available."
+    except:
+        return "Error fetching fun fact."
 
 def is_prime(n: int) -> bool:
     """Check if a number is prime."""
@@ -34,48 +44,6 @@ def get_digit_sum(n: int) -> int:
     """Calculate the sum of digits of a number."""
     return sum(int(digit) for digit in str(n))
 
-def get_fun_fact(n: int) -> str:
-    """Fetch a fun fact about a number from the Numbers API."""
-    try:
-        response = requests.get(f"{NUMBERS_API_URL}{n}")
-        if response.status_code == 200:
-            return response.text
-        return "No fun fact available."
-    except:
-        return "Error fetching fun fact."
-
-from fastapi import Query
-
-@app.get("/api/classify-number")
-def classify_number(number: int):
-    properties = []
-    
-    # Check if prime
-    if number > 1 and all(number % i != 0 for i in range(2, int(number**0.5) + 1)):
-        properties.append("prime")
-
-    # Check if even or odd
-    properties.append("even" if number % 2 == 0 else "odd")
-
-    # Calculate digit sum
-    digit_sum = sum(int(digit) for digit in str(abs(number)))
-
-    # Get fun fact
-    fun_fact = get_fun_fact(number)
-
-    return {
-        "number": number,
-        "is_prime": "prime" in properties,
-        "is_perfect": number == sum(i for i in range(1, number) if number % i == 0),
-        "properties": properties,
-        "digit_sum": digit_sum,
-        "fun_fact": fun_fact
-    }
-
-
-
-from fastapi.middleware.cors import CORSMiddleware
-
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -85,6 +53,41 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+@app.get("/api/classify-number")
+def classify_number(number: int):
+    properties = []
+    
+    # Check if prime
+    if is_prime(number):
+        properties.append("prime")
+
+    # Check if perfect
+    if is_perfect(number):
+        properties.append("perfect")
+
+    # Check if Armstrong
+    if is_armstrong(number):
+        properties.append("armstrong")
+
+    # Check if even or odd
+    properties.append("even" if number % 2 == 0 else "odd")
+
+    # Calculate digit sum
+    digit_sum = get_digit_sum(number)
+
+    # Get fun fact
+    fun_fact = get_fun_fact(number)
+
+    return {
+        "number": number,
+        "is_prime": "prime" in properties,
+        "is_perfect": "perfect" in properties,
+        "properties": properties,
+        "digit_sum": digit_sum,
+        "fun_fact": fun_fact
+    }
+
+# Ensure the app runs on Railway
 PORT = int(os.getenv("PORT", 8000))
 
 if __name__ == "__main__":
