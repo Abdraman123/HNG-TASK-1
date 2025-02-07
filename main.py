@@ -58,25 +58,21 @@ app.add_middleware(
 
 @app.get("/api/classify-number")
 def classify_number(number: int):
+    # If number is negative, return a 400 Bad Request error
+    if number < 0:
+        raise HTTPException(status_code=400, detail="Number cannot be negative.")
+    
     properties = []
     
     # Check if prime
-    if is_prime(number):
+    if number > 1 and all(number % i != 0 for i in range(2, int(number**0.5) + 1)):
         properties.append("prime")
-
-    # Check if perfect
-    if is_perfect(number):
-        properties.append("perfect")
-
-    # Check if Armstrong
-    if is_armstrong(number):
-        properties.append("armstrong")
 
     # Check if even or odd
     properties.append("even" if number % 2 == 0 else "odd")
 
     # Calculate digit sum
-    digit_sum = get_digit_sum(number)
+    digit_sum = sum(int(digit) for digit in str(abs(number)))  # Use absolute value of the number to avoid issues
 
     # Get fun fact
     fun_fact = get_fun_fact(number)
@@ -84,11 +80,12 @@ def classify_number(number: int):
     return {
         "number": number,
         "is_prime": "prime" in properties,
-        "is_perfect": "perfect" in properties,
+        "is_perfect": number == sum(i for i in range(1, number) if number % i == 0),
         "properties": properties,
         "digit_sum": digit_sum,
         "fun_fact": fun_fact
     }
+
 
 # Ensure the app runs on Railway
 PORT = int(os.getenv("PORT", 8000))
