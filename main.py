@@ -1,13 +1,22 @@
 import os
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi import Query
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Define the Numbers API base URL
-NUMBERS_API_URL = "http://numbersapi.com/"
+def get_fun_fact(number: int):
+    try:
+        url = f"http://numbersapi.com/{number}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text
+        return "No fun fact available."
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error fetching fun fact: " + str(e))
+
 
 def get_fun_fact(number: int) -> str:
     """Fetch a fun fact about a number from the Numbers API."""
@@ -57,22 +66,27 @@ app.add_middleware(
 )
 
 @app.get("/api/classify-number")
-def classify_number(number: int):
-    # If number is negative, return a 400 Bad Request error
+def classify_number(number: str = Query(...)):
+    # Check if input is a valid number
+    try:
+        number = int(number)  # Try converting input to an integer
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid input: Input must be a number.")
+
+    # Handle negative number case
     if number < 0:
         raise HTTPException(status_code=400, detail="Number cannot be negative.")
     
     properties = []
-    
     # Check if prime
-    if number > 1 and all(number % i != 0 for i in range(2, int(number**0.5) + 1)):
+    if number > 1 and all(number % i != 0 for i in range(2, int(number ** 0.5) + 1)):
         properties.append("prime")
 
-    # Check if even or odd
+    # Check if the number is even or odd
     properties.append("even" if number % 2 == 0 else "odd")
 
     # Calculate digit sum
-    digit_sum = sum(int(digit) for digit in str(abs(number)))  # Use absolute value of the number to avoid issues
+    digit_sum = sum(int(digit) for digit in str(abs(number)))
 
     # Get fun fact
     fun_fact = get_fun_fact(number)
