@@ -104,16 +104,15 @@ def classify_number(number: int):
 
 @app.get("/api/classify-number")
 def classify_number(number: int):
-    # Handle negative number case
-    if number < 0:
-        raise HTTPException(status_code=400, detail="Number cannot be negative.")
-    
-    # Check if number is prime
+    print(f"Received number: {number}")  # Debugging line
+
     properties = []
-    if number > 1 and all(number % i != 0 for i in range(2, int(number ** 0.5) + 1)):
+    
+    # Check if prime
+    if number > 1 and all(number % i != 0 for i in range(2, int(number**0.5) + 1)):
         properties.append("prime")
 
-    # Check if the number is even or odd
+    # Check if even or odd
     properties.append("even" if number % 2 == 0 else "odd")
 
     # Calculate digit sum
@@ -122,7 +121,7 @@ def classify_number(number: int):
     # Get fun fact
     fun_fact = get_fun_fact(number)
 
-    return {
+    response = {
         "number": number,
         "is_prime": "prime" in properties,
         "is_perfect": number == sum(i for i in range(1, number) if number % i == 0),
@@ -130,6 +129,9 @@ def classify_number(number: int):
         "digit_sum": digit_sum,
         "fun_fact": fun_fact
     }
+
+    print(f"Response: {response}")  # Debugging line
+    return response
 
 
 # Ensure the app runs on Railway
