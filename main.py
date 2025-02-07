@@ -69,20 +69,47 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-@app.get("/api/classify-number")
-def classify_number(number: str = Query(...)):
-    # Check if input is a valid number
-    try:
-        number = int(number)  # Try converting input to an integer
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid input: Input must be a number.")
+from fastapi import HTTPException
 
+@app.get("/api/classify-number")
+def classify_number(number: int):
+    if number < 0:
+        raise HTTPException(status_code=400, detail="Number cannot be negative.")
+    
+    if not isinstance(number, int):  # If it's not an integer
+        raise HTTPException(status_code=400, detail="Input must be an integer.")
+
+    # Your classification logic here...
+    properties = []
+    # Example logic for prime check
+    if number > 1 and all(number % i != 0 for i in range(2, int(number**0.5) + 1)):
+        properties.append("prime")
+    
+    # Continue with the rest of the logic...
+@app.get("/api/classify-number/{number}")
+def classify_number(number: int):
+    if number == 0:  # This is just an example to simulate something not found
+        raise HTTPException(status_code=404, detail="Number not found.")
+    # Rest of the code...
+
+@app.get("/api/classify-number")
+def classify_number(number: int):
+    try:
+        # Example: Attempt to get a fun fact about the number
+        fun_fact = get_fun_fact(number)  # Function call that might fail
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error: " + str(e))
+
+    # Continue with your logic and return the result...
+
+@app.get("/api/classify-number")
+def classify_number(number: int):
     # Handle negative number case
     if number < 0:
         raise HTTPException(status_code=400, detail="Number cannot be negative.")
     
+    # Check if number is prime
     properties = []
-    # Check if prime
     if number > 1 and all(number % i != 0 for i in range(2, int(number ** 0.5) + 1)):
         properties.append("prime")
 
