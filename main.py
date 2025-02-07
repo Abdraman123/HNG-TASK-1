@@ -7,6 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# Define the Numbers API base URL
+NUMBERS_API_URL = "http://numbersapi.com/"
+
+
 def get_fun_fact(number: int):
     try:
         url = f"http://numbersapi.com/{number}"
